@@ -353,11 +353,68 @@ Premium Monthly/Yearly, Ad-Free Monthly/Yearly with trial conversion and churn t
 | `GenerateGrowthReportsJob` | Daily | DAU/WAU/MAU, retention, user segmentation |
 | `CalculateLifetimeValueJob` | Weekly | Calculate user LTV |
 
+## Phase 13 — Enterprise DevOps & Hyperscale Infrastructure
+
+### Docker Services
+| Container | Purpose |
+|-----------|---------|
+| `app` | PHP 8.3 FPM |
+| `nginx` | Reverse proxy |
+| `redis` | Cache, sessions, queues |
+| `mysql` | Database |
+| `horizon` | Queue workers |
+| `scheduler` | Cron tasks |
+| `pulse` | Metrics collector |
+
+```bash
+docker compose up -d          # Local development
+docker compose -f docker-compose.prod.yml up -d  # Production
+```
+
+### Queue Infrastructure (Horizon)
+Priority queues: `high` → `notifications` → `rss` → `ingestion` → `analytics` → `default`
+
+Auto-scaling supervisors in production (up to 30 workers).
+
+### Monitoring
+| Tool | Path | Purpose |
+|------|------|---------|
+| Health | `/health` | Extended health checks |
+| Horizon | `/horizon` | Queue monitoring |
+| Pulse | `/pulse` | Real-time metrics |
+| Telescope | `/telescope` | Debug (local/staging) |
+| Sentry | — | Error tracking |
+
+### CI/CD
+- `.github/workflows/ci.yml` — tests, lint, Docker build, config validation
+- `.github/workflows/deploy.yml` — staging/production deploy with rollback
+
+### Load Testing
+```bash
+k6 run load-tests/k6-10k.js   # 10k users
+k6 run load-tests/k6-50k.js   # 50k users
+k6 run load-tests/k6-100k.js  # 100k users
+```
+
+### Documentation
+- `docs/deployment.md` — Local, staging, production deployment
+- `docs/monitoring.md` — Monitoring and alerting setup
+- `docs/security.md` — Security hardening guide
+
+### Scaling Targets
+- 100,000+ DAU
+- 1M+ MAU
+- Read replica ready (`mysql_read` connection)
+- Redis-optimized caching (recommendations, trending, sessions)
+
 ## Scheduled Tasks
 
 | Command | Schedule | Purpose |
 |---------|----------|---------|
 | `notifications:process-scheduled` | Every minute | Dispatch scheduled push notifications |
+| `horizon:snapshot` | Every 5 minutes | Queue metrics snapshots |
+| `infrastructure:monitor` | Every 5 minutes | CPU/memory/queue alerts |
+| `backup:database` | Daily 02:00 | Automated DB backup to S3 |
 | `rss:monitor-health` | Hourly | Validate RSS source health |
 | `rss:fetch` | Every 5 minutes | Fetch due RSS feeds |
 | `news:detect-breaking` | Every 15 minutes | Breaking news detection |

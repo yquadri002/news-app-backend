@@ -1,0 +1,82 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      rollback:
+        description: 'Rollback to previous release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, redis
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+
+      - name: Environment validation
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan config:cache
+          php artisan route:cache
+          php artisan about
+
+      - name: Run tests before deploy
+        run: php artisan test
+
+      - name: Build Docker image
+        run: docker build -f docker/php/Dockerfile.prod -t newshub-pro:${{ github.sha }} .
+
+      - name: Deploy to server
+        if: ${{ !github.event.inputs.rollback }}
+        run: |
+          echo "Deploying ${{ github.sha }} to ${{ github.event.inputs.environment || 'staging' }}"
+          echo "Image: newshub-pro:${{ github.sha }}"
+          # Replace with your deployment target (ECS, K8s, SSH, etc.)
+
+      - name: Rollback deployment
+        if: ${{ github.event.inputs.rollback }}
+        run: |
+          echo "Rolling back deployment on ${{ github.event.inputs.environment || 'staging' }}"
+          # Replace with rollback commands for your infrastructure
+
+      - name: Post-deploy health check
+        run: |
+          echo "curl -f https://staging.newshub.pro/health"
+          # Replace with actual health check URL
+
+      - name: Notify Sentry of deploy
+        if: env.SENTRY_AUTH_TOKEN != ''
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          curl -sL https://sentry.io/api/0/organizations/${SENTRY_ORG}/releases/ \
+            -X POST \
+            -H "Authorization: Bearer ${SENTRY_AUTH_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d "{\"version\":\"${{ github.sha }}\",\"projects\":[\"${SENTRY_PROJECT}\"]}" || true
