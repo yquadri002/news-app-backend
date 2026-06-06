@@ -12,6 +12,7 @@ enum AdminPermission: string
     case AdsManage = 'ads.manage';
     case AppUpdatesManage = 'app_updates.manage';
     case AnalyticsView = 'analytics.view';
+    case RevenueManage = 'revenue.manage';
     case RolesManage = 'roles.manage';
     case AdminsManage = 'admins.manage';
 

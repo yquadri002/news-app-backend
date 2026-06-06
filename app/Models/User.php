@@ -79,6 +79,28 @@ class User extends Model
     {
         return $this->hasMany(NotificationRecommendation::class);
     }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(UserSubscription::class)
+            ->whereIn('status', ['active', 'trialing'])
+            ->latest('starts_at');
+    }
+
+    public function monetizationProfile(): HasOne
+    {
+        return $this->hasOne(UserMonetizationProfile::class);
+    }
+
+    public function revenueEvents(): HasMany
+    {
+        return $this->hasMany(RevenueEvent::class);
+    }
 }
 
 

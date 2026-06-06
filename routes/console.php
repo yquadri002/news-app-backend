@@ -21,3 +21,7 @@ Schedule::job(new \App\Jobs\GenerateNotificationRecommendationsJob)->everyFiftee
 Schedule::job(new \App\Jobs\GenerateDigestJob)->hourly();
 Schedule::job(new \App\Jobs\SendSegmentNotificationsJob)->everyThirtyMinutes();
 Schedule::job(new \App\Jobs\AnalyzeNotificationPerformanceJob)->daily();
+Schedule::job(new \App\Jobs\CalculateRevenueMetricsJob)->daily();
+Schedule::job(new \App\Jobs\OptimizeAdPlacementsJob)->hourly();
+Schedule::job(new \App\Jobs\GenerateGrowthReportsJob)->daily();
+Schedule::job(new \App\Jobs\CalculateLifetimeValueJob)->weekly();
