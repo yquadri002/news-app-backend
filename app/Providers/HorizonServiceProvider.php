@@ -28,9 +28,13 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewHorizon', function ($user = null) {
-            $allowed = array_filter(explode(',', env('HORIZON_ALLOWED_EMAILS', 'admin@newshub.pro')));
+            if (! config('infrastructure.monitoring.horizon_enabled', false)) {
+                return false;
+            }
 
-            return $user && in_array($user->email, $allowed);
+            $allowed = array_filter(explode(',', (string) config('infrastructure.monitoring.allowed_emails', '')));
+
+            return $user && (empty($allowed) || in_array($user->email, $allowed, true));
         });
     }
 }

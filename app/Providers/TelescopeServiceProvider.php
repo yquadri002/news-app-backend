@@ -15,7 +15,9 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     public function register(): void
     {
-        // Telescope::night();
+        if (! config('infrastructure.monitoring.telescope_enabled', false)) {
+            return;
+        }
 
         $this->hideSensitiveRequestDetails();
 
@@ -57,9 +59,13 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewTelescope', function (?Admin $user = null) {
-            $allowed = array_filter(explode(',', env('TELESCOPE_ALLOWED_EMAILS', 'admin@newshub.pro')));
+            if (! config('infrastructure.monitoring.telescope_enabled', false)) {
+                return false;
+            }
 
-            return $user && in_array($user->email, $allowed);
+            $allowed = array_filter(explode(',', (string) config('infrastructure.monitoring.allowed_emails', '')));
+
+            return $user && (empty($allowed) || in_array($user->email, $allowed, true));
         });
     }
 }

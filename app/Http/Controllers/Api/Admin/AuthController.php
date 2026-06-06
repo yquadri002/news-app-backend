@@ -31,6 +31,24 @@ class AuthController extends Controller
             'data' => [
                 'admin' => new AdminResource($result['admin']),
                 'token' => $result['token'],
+                'tokens' => $result['tokens'],
+            ],
+        ]);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        $result = $this->authService->refresh(
+            $request->user(),
+            $request->get('device_name', 'admin-panel'),
+        );
+
+        return response()->json([
+            'message' => 'Token refreshed.',
+            'data' => [
+                'admin' => new AdminResource($result['admin']),
+                'token' => $result['token'],
+                'tokens' => $result['tokens'],
             ],
         ]);
     }

@@ -1,5 +1,13 @@
 <?php
 
+use App\Http\Middleware\ApiRateLimiter;
+use App\Http\Middleware\CheckAdminPermission;
+use App\Http\Middleware\EnsureAccessToken;
+use App\Http\Middleware\EnsureAdminIsActive;
+use App\Http\Middleware\EnsureMonitoringAccess;
+use App\Http\Middleware\EnsureRefreshToken;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrackUserActivity;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,14 +22,26 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin.active' => \App\Http\Middleware\EnsureAdminIsActive::class,
-            'admin.permission' => \App\Http\Middleware\CheckAdminPermission::class,
-            'track.activity' => \App\Http\Middleware\TrackUserActivity::class,
-            'rate.limit' => \App\Http\Middleware\ApiRateLimiter::class,
+            'admin.active' => EnsureAdminIsActive::class,
+            'admin.permission' => CheckAdminPermission::class,
+            'track.activity' => TrackUserActivity::class,
+            'rate.limit' => ApiRateLimiter::class,
+            'access.token' => EnsureAccessToken::class,
+            'refresh.token' => EnsureRefreshToken::class,
+            'monitoring.access' => EnsureMonitoringAccess::class,
         ]);
 
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
-        $middleware->api(prepend: [\App\Http\Middleware\ApiRateLimiter::class]);
+        $trustedProxies = env('TRUSTED_PROXIES', '*');
+        $middleware->trustProxies(
+            at: $trustedProxies === '*' ? '*' : array_filter(explode(',', $trustedProxies)),
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+                | Request::HEADER_X_FORWARDED_AWS_ELB,
+        );
+        $middleware->append(SecurityHeaders::class);
+        $middleware->api(prepend: [ApiRateLimiter::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

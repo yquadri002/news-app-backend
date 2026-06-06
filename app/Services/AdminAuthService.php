@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Admin;
 use App\Repositories\Contracts\AdminRepositoryInterface;
+use App\Services\Auth\TokenService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -14,6 +15,7 @@ class AdminAuthService
 {
     public function __construct(
         private readonly AdminRepositoryInterface $adminRepository,
+        private readonly TokenService $tokenService,
     ) {
     }
 
@@ -34,17 +36,33 @@ class AdminAuthService
         }
 
         $this->adminRepository->updateLastLogin($admin);
-        $token = $admin->createToken($deviceName)->plainTextToken;
+        $tokens = $this->tokenService->issuePair($admin, $deviceName);
 
         return [
             'admin' => $admin->load('role'),
-            'token' => $token,
+            'token' => $tokens['access_token'],
+            'tokens' => $tokens,
+        ];
+    }
+
+    public function refresh(Admin $admin, string $deviceName = 'admin-panel'): array
+    {
+        $tokens = $this->tokenService->refresh(
+            $admin,
+            $admin->currentAccessToken(),
+            $deviceName,
+        );
+
+        return [
+            'admin' => $admin->load('role'),
+            'token' => $tokens['access_token'],
+            'tokens' => $tokens,
         ];
     }
 
     public function logout(Admin $admin): void
     {
-        $admin->currentAccessToken()?->delete();
+        $this->tokenService->revokeAll($admin);
     }
 
     public function sendPasswordResetLink(string $email): string
