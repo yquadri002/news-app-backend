@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 Schedule::command('notifications:process-scheduled')->everyMinute();
 Schedule::command('rss:monitor-health')->hourly();
+Schedule::command('rss:fetch')->everyFiveMinutes();
+Schedule::job(new \App\Jobs\CalculateTrendingJob)->everyTenMinutes();
+Schedule::command('news:detect-breaking')->everyFifteenMinutes();

@@ -22,7 +22,7 @@ php artisan key:generate
 
 # Configure MySQL and Redis in .env, then:
 php artisan migrate --seed
-php artisan queue:work redis --queue=notifications
+php artisan queue:work redis --queue=rss,ingestion,notifications
 php artisan schedule:work
 ```
 

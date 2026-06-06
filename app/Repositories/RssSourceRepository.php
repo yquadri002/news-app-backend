@@ -39,6 +39,29 @@ class RssSourceRepository extends BaseRepository implements RssSourceRepositoryI
         $this->query()->where('id', $id)->update($healthData);
     }
 
+    public function getDueForFetch(): Collection
+    {
+        return $this->query()
+            ->where('is_active', true)
+            ->orderByDesc('priority')
+            ->get()
+            ->filter(function (RssSource $source) {
+                if (! $source->last_fetched_at) {
+                    return true;
+                }
+
+                return $source->last_fetched_at
+                    ->addMinutes($source->fetch_interval_minutes)
+                    ->isPast();
+            })
+            ->values();
+    }
+
+    public function markFetched(int $id): void
+    {
+        $this->query()->where('id', $id)->update(['last_fetched_at' => now()]);
+    }
+
     protected function applyFilters(Builder $query, array $filters): Builder
     {
         if (! empty($filters['search'])) {
