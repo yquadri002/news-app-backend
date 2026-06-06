@@ -30,11 +30,27 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     {
         $query = $this->query()->whereNotNull('fcm_token');
 
+        $query->where(function (Builder $q) use ($filters) {
+            $q->whereDoesntHave('preferences')
+                ->orWhereHas('preferences', function (Builder $prefs) use ($filters) {
+                    $prefs->where('notifications_enabled', true);
+                    if (! empty($filters['breaking_only'])) {
+                        $prefs->where('breaking_news_enabled', true);
+                    }
+                });
+        });
+
         if (! empty($filters['category_ids'])) {
             $query->whereHas('preferences', function (Builder $q) use ($filters) {
                 foreach ($filters['category_ids'] as $categoryId) {
                     $q->whereJsonContains('category_ids', (int) $categoryId);
                 }
+            });
+        }
+
+        if (! empty($filters['segment_ids'])) {
+            $query->whereHas('segmentMemberships', function (Builder $q) use ($filters) {
+                $q->whereIn('user_segment_id', $filters['segment_ids']);
             });
         }
 

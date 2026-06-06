@@ -34,6 +34,8 @@ class BreakingNewsDetectionService
             + ($confirmationScore * 0.25)
             + ($trendScore * 0.15);
 
+        $wasBreaking = $article->is_breaking;
+
         $article->update([
             'breaking_score' => round($breakingScore, 4),
             'is_breaking' => $breakingScore >= self::BREAKING_THRESHOLD,
@@ -41,6 +43,11 @@ class BreakingNewsDetectionService
 
         if ($article->metrics) {
             $article->metrics->update(['breaking_score' => round($breakingScore, 4)]);
+        }
+
+        if (! $wasBreaking && $breakingScore >= self::BREAKING_THRESHOLD
+            && config('notification_intelligence.breaking.auto_push_enabled', true)) {
+            \App\Jobs\ProcessBreakingNotificationJob::dispatch($article->id);
         }
 
         return $breakingScore;

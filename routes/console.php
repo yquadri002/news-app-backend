@@ -17,3 +17,7 @@ Schedule::job(new \App\Jobs\CalculateInterestProfilesJob)->hourly();
 Schedule::job(new \App\Jobs\GenerateRecommendationsJob)->everyFifteenMinutes();
 Schedule::job(new \App\Jobs\RefreshTrendingScoresJob)->everyTenMinutes();
 Schedule::job(new \App\Jobs\GenerateUserSegmentsJob)->daily();
+Schedule::job(new \App\Jobs\GenerateNotificationRecommendationsJob)->everyFifteenMinutes();
+Schedule::job(new \App\Jobs\GenerateDigestJob)->hourly();
+Schedule::job(new \App\Jobs\SendSegmentNotificationsJob)->everyThirtyMinutes();
+Schedule::job(new \App\Jobs\AnalyzeNotificationPerformanceJob)->daily();

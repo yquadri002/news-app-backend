@@ -265,6 +265,56 @@ RSS Sources → FetchRssFeedsJob → ProcessArticleJob
 | `RefreshTrendingScoresJob` | Every 10 min |
 | `GenerateUserSegmentsJob` | Daily |
 
+## Phase 11 — Enterprise Notification Intelligence
+
+### Intelligent Targeting Factors
+| Factor | Weight | Description |
+|--------|--------|-------------|
+| User Interests | 35% | Category/source scores and preferences |
+| User Segments | 20% | Segment keyword and confidence matching |
+| Read History | 10% | Suppress already-read; boost familiar categories |
+| Location | 10% | Geo-relevant article matching |
+| Language | 10% | User language alignment |
+| Freshness | 15% | Recency decay scoring |
+
+### Notification Types
+`manual`, `breaking`, `digest`, `recommendation`, `automated`
+
+### Fatigue Protection
+- Daily frequency caps per user
+- Quiet hours (timezone-aware)
+- Cooldown periods between sends
+- Sensitivity scoring based on open rates
+
+### Digest Schedule
+| Digest | Default Hour |
+|--------|-------------|
+| Morning | 08:00 |
+| Afternoon | 13:00 |
+| Evening | 19:00 |
+
+### Notification Intelligence APIs
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/notifications/recommendations` | Pending AI notification recommendations |
+| POST | `/api/v1/notifications/send` | Send recommendation/breaking/digest/segment notification |
+| POST | `/api/v1/notifications/test` | Send test push to user or FCM token |
+| GET | `/api/v1/notifications/analytics` | Delivery, open, CTR, conversion, retention metrics |
+| POST | `/api/v1/notifications/analytics/snapshot` | Calculate daily analytics snapshot |
+| POST | `/api/v1/client/notifications/open` | Track notification open (client, auth required) |
+
+### Intelligence Tables
+`notification_user_states`, `notification_recommendations`, `notification_digests`, `notification_ab_tests`, `notification_analytics_snapshots`
+
+### Background Jobs
+| Job | Schedule | Purpose |
+|-----|----------|---------|
+| `GenerateNotificationRecommendationsJob` | Every 15 min | Score users and send due recommendations |
+| `GenerateDigestJob` | Hourly | Generate and send morning/afternoon/evening digests |
+| `SendSegmentNotificationsJob` | Every 30 min | Segment-targeted article pushes |
+| `AnalyzeNotificationPerformanceJob` | Daily | Snapshot delivery/open/CTR analytics |
+| `ProcessBreakingNotificationJob` | On detection | Auto-push breaking news to targeted users |
+
 ## Scheduled Tasks
 
 | Command | Schedule | Purpose |

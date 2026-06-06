@@ -69,5 +69,16 @@ class User extends Model
     {
         return $this->hasMany(UserSegmentMembership::class);
     }
+
+    public function notificationState(): HasOne
+    {
+        return $this->hasOne(NotificationUserState::class);
+    }
+
+    public function notificationRecommendations(): HasMany
+    {
+        return $this->hasMany(NotificationRecommendation::class);
+    }
 }
+
 
