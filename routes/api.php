@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\NewsModerationController;
 use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\Admin\NotificationIntelligenceController;
 use App\Http\Controllers\Api\Admin\RecommendationAnalyticsController;
+use App\Http\Controllers\Api\Admin\RevenueController as AdminRevenueController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\RssSourceController;
 use App\Http\Controllers\Api\Client\AnalyticsController as ClientAnalyticsController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Api\Client\NotificationController as ClientNotification
 use App\Http\Controllers\Api\Client\NewsController;
 use App\Http\Controllers\Api\Client\PreferenceController;
 use App\Http\Controllers\Api\Client\RecommendationController;
+use App\Http\Controllers\Api\Client\RevenueController as ClientRevenueController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -116,6 +118,15 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    // Revenue & Growth Platform APIs (admin)
+    Route::prefix('revenue')->middleware(['auth:sanctum', 'admin.active', 'admin.permission:revenue.manage'])->group(function () {
+        Route::get('dashboard', [AdminRevenueController::class, 'dashboard']);
+        Route::get('analytics', [AdminRevenueController::class, 'analytics']);
+        Route::get('subscriptions', [AdminRevenueController::class, 'subscriptions']);
+        Route::post('ab-tests', [AdminRevenueController::class, 'storeAbTest']);
+        Route::get('optimization', [AdminRevenueController::class, 'optimization']);
+    });
+
     // Notification Intelligence APIs (admin)
     Route::prefix('notifications')->middleware(['auth:sanctum', 'admin.active', 'admin.permission:notifications.manage'])->group(function () {
         Route::get('recommendations', [NotificationIntelligenceController::class, 'recommendations']);
@@ -171,6 +182,10 @@ Route::prefix('v1')->group(function () {
             Route::post('analytics/category-view', [ClientAnalyticsController::class, 'trackCategoryView']);
 
             Route::post('notifications/open', [ClientNotificationController::class, 'trackOpen']);
+
+            Route::post('revenue/events', [ClientRevenueController::class, 'trackEvent']);
+            Route::get('revenue/plans', [ClientRevenueController::class, 'plans']);
+            Route::post('revenue/subscribe', [ClientRevenueController::class, 'subscribe']);
         });
     });
 });

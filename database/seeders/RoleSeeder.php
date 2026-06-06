@@ -42,6 +42,7 @@ class RoleSeeder extends Seeder
                 'permissions' => [
                     AdminPermission::DashboardView->value,
                     AdminPermission::AnalyticsView->value,
+                    AdminPermission::RevenueManage->value,
                 ],
                 'description' => 'Analytics and reporting access',
                 'is_system' => true,

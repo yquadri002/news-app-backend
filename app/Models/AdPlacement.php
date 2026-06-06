@@ -31,4 +31,14 @@ class AdPlacement extends Model
     {
         return $this->hasMany(AdAbTest::class);
     }
+
+    public function mediationWaterfall(): HasMany
+    {
+        return $this->hasMany(AdMediationWaterfall::class)->orderBy('priority');
+    }
+
+    public function revenueEvents(): HasMany
+    {
+        return $this->hasMany(RevenueEvent::class);
+    }
 }

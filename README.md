@@ -315,6 +315,44 @@ RSS Sources → FetchRssFeedsJob → ProcessArticleJob
 | `AnalyzeNotificationPerformanceJob` | Daily | Snapshot delivery/open/CTR analytics |
 | `ProcessBreakingNotificationJob` | On detection | Auto-push breaking news to targeted users |
 
+## Phase 12 — Enterprise Revenue & Growth Platform
+
+### Revenue Analytics
+Tracks impressions, clicks, CTR, fill rate, eCPM, ARPU, ARPDAU, and revenue by country, platform, and category.
+
+### Ad Optimization & Mediation
+- Automatic placement, frequency, network, and format optimization
+- Multi-network waterfall: AdMob, Meta, AppLovin MAX, Unity Ads, Pangle
+
+### User Monetization Segments
+High Revenue, Low Revenue, Ad Sensitive, Premium, Heavy Readers, Casual Readers
+
+### Subscription Plans
+Premium Monthly/Yearly, Ad-Free Monthly/Yearly with trial conversion and churn tracking.
+
+### Revenue APIs
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/revenue/dashboard` | Real-time revenue dashboard |
+| GET | `/api/v1/revenue/analytics` | Detailed revenue analytics |
+| GET | `/api/v1/revenue/subscriptions` | Plans, metrics, and subscriber list |
+| POST | `/api/v1/revenue/ab-tests` | Create revenue A/B test |
+| GET | `/api/v1/revenue/optimization` | Ad optimization recommendations |
+| POST | `/api/v1/client/revenue/events` | Track ad impression/click (client) |
+| GET | `/api/v1/client/revenue/plans` | List subscription plans (client) |
+| POST | `/api/v1/client/revenue/subscribe` | Activate subscription (client) |
+
+### Revenue Tables
+`subscription_plans`, `user_subscriptions`, `revenue_events`, `ad_revenue_snapshots`, `growth_metrics`, `ab_test_results`, `user_monetization_profiles`, `ad_mediation_waterfalls`
+
+### Background Jobs
+| Job | Schedule | Purpose |
+|-----|----------|---------|
+| `CalculateRevenueMetricsJob` | Daily | Snapshot ad revenue metrics |
+| `OptimizeAdPlacementsJob` | Hourly | Optimize placements and mediation waterfall |
+| `GenerateGrowthReportsJob` | Daily | DAU/WAU/MAU, retention, user segmentation |
+| `CalculateLifetimeValueJob` | Weekly | Calculate user LTV |
+
 ## Scheduled Tasks
 
 | Command | Schedule | Purpose |
@@ -335,5 +373,6 @@ RSS Sources → FetchRssFeedsJob → ProcessArticleJob
 - `ads.manage` — Advertisement control
 - `app_updates.manage` — App version management
 - `analytics.view` — Analytics access
+- `revenue.manage` — Revenue & growth platform
 - `roles.manage` — Role management
 - `admins.manage` — Admin user management
