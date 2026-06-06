@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\DigestType;
 use App\Enums\NotificationStatus;
 use App\Enums\NotificationTargetType;
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +21,12 @@ class Notification extends Model
         'action_type',
         'action_data',
         'target_type',
+        'notification_type',
+        'digest_type',
+        'article_id',
+        'ab_test_variant',
+        'ab_test_id',
+        'urgency_score',
         'status',
         'scheduled_at',
         'sent_at',
@@ -34,6 +42,9 @@ class Notification extends Model
         return [
             'action_data' => 'array',
             'target_type' => NotificationTargetType::class,
+            'notification_type' => NotificationType::class,
+            'digest_type' => DigestType::class,
+            'urgency_score' => 'decimal:4',
             'status' => NotificationStatus::class,
             'scheduled_at' => 'datetime',
             'sent_at' => 'datetime',
@@ -54,4 +65,10 @@ class Notification extends Model
     {
         return $this->hasMany(NotificationDelivery::class);
     }
+
+    public function article(): BelongsTo
+    {
+        return $this->belongsTo(Article::class);
+    }
 }
+

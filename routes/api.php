@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\FeedMonitoringController;
 use App\Http\Controllers\Api\Admin\NewsModerationController;
 use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Api\Admin\NotificationIntelligenceController;
 use App\Http\Controllers\Api\Admin\RecommendationAnalyticsController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\RssSourceController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Api\Client\AnalyticsController as ClientAnalyticsContro
 use App\Http\Controllers\Api\Client\AppUpdateController;
 use App\Http\Controllers\Api\Client\CategoryController as ClientCategoryController;
 use App\Http\Controllers\Api\Client\DeviceController;
+use App\Http\Controllers\Api\Client\NotificationController as ClientNotificationController;
 use App\Http\Controllers\Api\Client\NewsController;
 use App\Http\Controllers\Api\Client\PreferenceController;
 use App\Http\Controllers\Api\Client\RecommendationController;
@@ -114,6 +116,15 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    // Notification Intelligence APIs (admin)
+    Route::prefix('notifications')->middleware(['auth:sanctum', 'admin.active', 'admin.permission:notifications.manage'])->group(function () {
+        Route::get('recommendations', [NotificationIntelligenceController::class, 'recommendations']);
+        Route::post('send', [NotificationIntelligenceController::class, 'send']);
+        Route::post('test', [NotificationIntelligenceController::class, 'test']);
+        Route::get('analytics', [NotificationIntelligenceController::class, 'analytics']);
+        Route::post('analytics/snapshot', [NotificationIntelligenceController::class, 'calculateSnapshot']);
+    });
+
     // Personalized Recommendation APIs (authenticated)
     Route::prefix('recommendations')->middleware(['auth:sanctum', 'track.activity'])->group(function () {
         Route::get('feed', [RecommendationController::class, 'feed']);
@@ -158,6 +169,8 @@ Route::prefix('v1')->group(function () {
             Route::post('analytics/article-view', [ClientAnalyticsController::class, 'trackArticleView']);
             Route::post('analytics/search', [ClientAnalyticsController::class, 'trackSearch']);
             Route::post('analytics/category-view', [ClientAnalyticsController::class, 'trackCategoryView']);
+
+            Route::post('notifications/open', [ClientNotificationController::class, 'trackOpen']);
         });
     });
 });

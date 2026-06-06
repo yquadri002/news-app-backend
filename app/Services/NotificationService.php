@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Enums\NotificationStatus;
 use App\Enums\NotificationTargetType;
+use App\Enums\NotificationType;
 use App\Jobs\SendPushNotificationJob;
 use App\Models\Notification;
+use App\Models\User;
 use App\Models\UserSegment;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -27,6 +29,7 @@ class NotificationService
     public function create(array $data, int $adminId): Notification
     {
         $data['created_by'] = $adminId;
+        $data['notification_type'] ??= NotificationType::Manual;
         $data['status'] = ! empty($data['scheduled_at'])
             ? NotificationStatus::Scheduled
             : NotificationStatus::Draft;
@@ -95,17 +98,26 @@ class NotificationService
 
     public function resolveRecipients(Notification $notification): \Illuminate\Database\Eloquent\Collection
     {
+        $breakingOnly = $notification->notification_type === NotificationType::Breaking;
+
         return match ($notification->target_type) {
-            NotificationTargetType::All => $this->userRepository->getUsersForNotification([]),
+            NotificationTargetType::All => $this->userRepository->getUsersForNotification([
+                'breaking_only' => $breakingOnly,
+            ]),
             NotificationTargetType::Categories => $this->userRepository->getUsersForNotification([
                 'category_ids' => $notification->targets->pluck('targetable_id')->toArray(),
+                'breaking_only' => $breakingOnly,
             ]),
-            NotificationTargetType::Segments => $this->resolveSegmentUsers($notification),
+            NotificationTargetType::Segments => $this->resolveSegmentUsers($notification, $breakingOnly),
+            NotificationTargetType::Users => $this->userRepository->getUsersForNotification([
+                'user_ids' => $notification->targets->pluck('targetable_id')->toArray(),
+                'breaking_only' => $breakingOnly,
+            ]),
             default => collect(),
         };
     }
 
-    private function resolveSegmentUsers(Notification $notification): \Illuminate\Database\Eloquent\Collection
+    private function resolveSegmentUsers(Notification $notification, bool $breakingOnly = false): \Illuminate\Database\Eloquent\Collection
     {
         $segmentIds = $notification->targets->pluck('targetable_id');
         $segments = UserSegment::whereIn('id', $segmentIds)->get();
@@ -113,7 +125,9 @@ class NotificationService
 
         foreach ($segments as $segment) {
             $users = $this->userRepository->getUsersForNotification([
+                'segment_ids' => [$segment->id],
                 'segment_criteria' => $segment->criteria,
+                'breaking_only' => $breakingOnly,
             ]);
             $allUsers = $allUsers->merge($users);
         }
@@ -126,6 +140,7 @@ class NotificationService
         $modelClass = match ($targetType) {
             NotificationTargetType::Categories->value => \App\Models\Category::class,
             NotificationTargetType::Segments->value => UserSegment::class,
+            NotificationTargetType::Users->value => User::class,
             default => null,
         };
 
