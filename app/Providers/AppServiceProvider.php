@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
 use App\Models\Category;
 use App\Models\Role;
+use App\Policies\ArticlePolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\RolePolicy;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::policy(Article::class, ArticlePolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
 

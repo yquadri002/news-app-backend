@@ -49,4 +49,9 @@ class RssSource extends Model
     {
         return $this->hasMany(Article::class);
     }
+
+    public function fetchLogs(): HasMany
+    {
+        return $this->hasMany(FeedFetchLog::class);
+    }
 }

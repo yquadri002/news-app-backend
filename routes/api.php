@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\BreakingNewsController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\FeedMonitoringController;
+use App\Http\Controllers\Api\Admin\NewsModerationController;
 use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\RssSourceController;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Api\Client\AnalyticsController as ClientAnalyticsContro
 use App\Http\Controllers\Api\Client\AppUpdateController;
 use App\Http\Controllers\Api\Client\CategoryController as ClientCategoryController;
 use App\Http\Controllers\Api\Client\DeviceController;
+use App\Http\Controllers\Api\Client\NewsController;
 use App\Http\Controllers\Api\Client\PreferenceController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,6 +55,19 @@ Route::prefix('v1')->group(function () {
             Route::post('rss-sources/{id}/validate', [RssSourceController::class, 'validateSource']);
             Route::get('rss-sources-health', [RssSourceController::class, 'health']);
             Route::patch('rss-sources/{id}/priority', [RssSourceController::class, 'updatePriority']);
+
+            // News Moderation
+            Route::get('news/articles', [NewsModerationController::class, 'index']);
+            Route::get('news/moderation/pending', [NewsModerationController::class, 'pending']);
+            Route::post('news/moderation/{id}/approve', [NewsModerationController::class, 'approve']);
+            Route::post('news/moderation/{id}/reject', [NewsModerationController::class, 'reject']);
+            Route::get('news/duplicates', [NewsModerationController::class, 'duplicates']);
+
+            // Feed Monitoring Dashboard
+            Route::get('feeds/dashboard', [FeedMonitoringController::class, 'dashboard']);
+            Route::get('feeds/logs', [FeedMonitoringController::class, 'logs']);
+            Route::get('feeds/source-performance', [FeedMonitoringController::class, 'sourcePerformance']);
+            Route::post('feeds/{sourceId}/fetch', [FeedMonitoringController::class, 'triggerFetch']);
         });
 
         // Breaking News Engine
@@ -92,6 +108,17 @@ Route::prefix('v1')->group(function () {
             Route::get('search-trends', [AdminAnalyticsController::class, 'searchTrends']);
             Route::get('retention', [AdminAnalyticsController::class, 'retention']);
         });
+    });
+
+    // Public News APIs
+    Route::prefix('news')->group(function () {
+        Route::get('feed', [NewsController::class, 'feed']);
+        Route::get('trending', [NewsController::class, 'trending']);
+        Route::get('breaking', [NewsController::class, 'breaking']);
+        Route::get('latest', [NewsController::class, 'latest']);
+        Route::get('category/{id}', [NewsController::class, 'byCategory']);
+        Route::get('article/{id}', [NewsController::class, 'article'])->name('news.article');
+        Route::get('search', [NewsController::class, 'search']);
     });
 
     // Client / Mobile App APIs

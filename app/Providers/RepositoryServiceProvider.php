@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Repositories\AdminRepository;
+use App\Repositories\FeedFetchLogRepository;
 use App\Repositories\AdPlacementRepository;
 use App\Repositories\AnalyticsRepository;
 use App\Repositories\AppVersionRepository;
 use App\Repositories\ArticleRepository;
 use App\Repositories\CategoryRepository;
 use App\Repositories\Contracts\AdminRepositoryInterface;
+use App\Repositories\Contracts\FeedFetchLogRepositoryInterface;
 use App\Repositories\Contracts\AdPlacementRepositoryInterface;
 use App\Repositories\Contracts\AnalyticsRepositoryInterface;
 use App\Repositories\Contracts\AppVersionRepositoryInterface;
@@ -38,5 +40,6 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(AdPlacementRepositoryInterface::class, AdPlacementRepository::class);
         $this->app->bind(AppVersionRepositoryInterface::class, AppVersionRepository::class);
         $this->app->bind(AnalyticsRepositoryInterface::class, AnalyticsRepository::class);
+        $this->app->bind(FeedFetchLogRepositoryInterface::class, FeedFetchLogRepository::class);
     }
 }
