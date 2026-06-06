@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             AdPlacementSeeder::class,
             AppVersionSeeder::class,
             RssSourceSeeder::class,
+            UserSegmentSeeder::class,
         ]);
     }
 }

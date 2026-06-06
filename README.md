@@ -168,12 +168,112 @@ CACHE_STORE=redis
 FIREBASE_CREDENTIALS=/path/to/firebase-credentials.json
 ```
 
+## Phase 9 — News Ingestion & Content Engine
+
+### Pipeline Architecture
+
+```
+RSS Sources → FetchRssFeedsJob → ProcessArticleJob
+  → Article Processing (HTML cleanup, images, metadata)
+  → Category Assignment (AI keyword scoring)
+  → Duplicate Detection (title/content similarity)
+  → Breaking News Detection → Trending Engine
+```
+
+### Public News APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/news/feed` | Personalized news feed |
+| GET | `/api/v1/news/trending` | Velocity-ranked trending articles |
+| GET | `/api/v1/news/breaking` | Breaking news |
+| GET | `/api/v1/news/latest` | Latest articles |
+| GET | `/api/v1/news/category/{id}` | Category feed |
+| GET | `/api/v1/news/article/{id}` | Article detail |
+| GET | `/api/v1/news/search?q=` | Full-text search |
+
+### Admin Ingestion APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/admin/news/articles` | All articles with filters |
+| GET | `/api/v1/admin/news/moderation/pending` | Pending moderation |
+| POST | `/api/v1/admin/news/moderation/{id}/approve` | Approve article |
+| POST | `/api/v1/admin/news/moderation/{id}/reject` | Reject article |
+| GET | `/api/v1/admin/news/duplicates` | Duplicate review |
+| GET | `/api/v1/admin/feeds/dashboard` | Feed monitoring dashboard |
+| GET | `/api/v1/admin/feeds/logs` | Fetch logs |
+| GET | `/api/v1/admin/feeds/source-performance` | Source performance |
+| POST | `/api/v1/admin/feeds/{sourceId}/fetch` | Trigger manual fetch |
+
+### Content Engine Tables
+
+| Table | Purpose |
+|-------|---------|
+| `article_images` | Extracted images per article |
+| `article_categories` | AI-assigned categories with confidence |
+| `article_tags` | Auto-extracted tags |
+| `article_metrics` | Trending, velocity, engagement scores |
+| `feed_fetch_logs` | RSS fetch audit trail |
+
+### Background Jobs
+
+| Job | Queue | Purpose |
+|-----|-------|---------|
+| `FetchRssFeedsJob` | `rss` | Fetch all due RSS sources |
+| `FetchRssSourceJob` | `rss` | Fetch single source with retry |
+| `ProcessArticleJob` | `ingestion` | Full article processing pipeline |
+| `DetectDuplicatesJob` | `ingestion` | Cross-feed duplicate merging |
+| `DetectBreakingNewsJob` | `ingestion` | Breaking news scoring |
+| `CalculateTrendingJob` | `ingestion` | Trending score calculation |
+
+## Phase 10 — AI Recommendation & Personalization Engine
+
+### Personalized Feed Types
+| Feed | Endpoint | Description |
+|------|----------|-------------|
+| For You | `GET /api/v1/recommendations/feed` | Personalized ranked feed |
+| Following | `GET /api/v1/recommendations/following` | Followed sources/categories |
+| Trending | `GET /api/v1/recommendations/trending` | Velocity-ranked trending |
+| Breaking | `GET /api/v1/recommendations/breaking` | Breaking news |
+| Local | `GET /api/v1/recommendations/local` | Location-based news |
+
+### Behavior Tracking
+`POST /api/v1/recommendations/behavior` — article open, read time, scroll depth, bookmark, share, search, category/source open
+
+### Feedback Loop
+`POST /api/v1/recommendations/feedback` — click/read/bookmark/share feedback for recommendation accuracy
+
+### Ranking Algorithm Weights
+| Factor | Default Weight |
+|--------|---------------|
+| User Interests | 30% |
+| Trending Score | 20% |
+| Breaking Score | 10% |
+| Freshness | 15% |
+| Engagement | 15% |
+| Source Quality | 10% |
+
+### Recommendation Tables
+`user_behavior_events`, `user_interest_profiles`, `user_category_scores`, `user_source_scores`, `user_topic_scores`, `recommendation_logs`, `user_segment_memberships`
+
+### Background Jobs
+| Job | Schedule |
+|-----|----------|
+| `CalculateInterestProfilesJob` | Hourly |
+| `GenerateRecommendationsJob` | Every 15 min |
+| `RefreshTrendingScoresJob` | Every 10 min |
+| `GenerateUserSegmentsJob` | Daily |
+
 ## Scheduled Tasks
 
 | Command | Schedule | Purpose |
 |---------|----------|---------|
 | `notifications:process-scheduled` | Every minute | Dispatch scheduled push notifications |
 | `rss:monitor-health` | Hourly | Validate RSS source health |
+| `rss:fetch` | Every 5 minutes | Fetch due RSS feeds |
+| `news:detect-breaking` | Every 15 minutes | Breaking news detection |
+| `CalculateTrendingJob` | Every 10 minutes | Recalculate trending scores |
 
 ## Role Permissions
 

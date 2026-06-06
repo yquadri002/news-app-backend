@@ -13,3 +13,7 @@ Schedule::command('rss:monitor-health')->hourly();
 Schedule::command('rss:fetch')->everyFiveMinutes();
 Schedule::job(new \App\Jobs\CalculateTrendingJob)->everyTenMinutes();
 Schedule::command('news:detect-breaking')->everyFifteenMinutes();
+Schedule::job(new \App\Jobs\CalculateInterestProfilesJob)->hourly();
+Schedule::job(new \App\Jobs\GenerateRecommendationsJob)->everyFifteenMinutes();
+Schedule::job(new \App\Jobs\RefreshTrendingScoresJob)->everyTenMinutes();
+Schedule::job(new \App\Jobs\GenerateUserSegmentsJob)->daily();

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\UserPreference;
+use App\Jobs\CalculateInterestProfilesJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
 
 class UserPreferenceService
@@ -40,7 +41,10 @@ class UserPreferenceService
             ]);
         }
 
-        return $user->load('preferences');
+        $user = $user->load('preferences');
+        CalculateInterestProfilesJob::dispatch($user->id);
+
+        return $user;
     }
 
     public function getPreferences(User $user): UserPreference
@@ -111,6 +115,9 @@ class UserPreferenceService
             'breaking_news_enabled' => $data['breaking_news_enabled'] ?? null,
         ], fn ($v) => $v !== null));
 
-        return $prefs->fresh();
+        $prefs = $prefs->fresh();
+        CalculateInterestProfilesJob::dispatch($user->id);
+
+        return $prefs;
     }
 }
