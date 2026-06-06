@@ -25,3 +25,6 @@ Schedule::job(new \App\Jobs\CalculateRevenueMetricsJob)->daily();
 Schedule::job(new \App\Jobs\OptimizeAdPlacementsJob)->hourly();
 Schedule::job(new \App\Jobs\GenerateGrowthReportsJob)->daily();
 Schedule::job(new \App\Jobs\CalculateLifetimeValueJob)->weekly();
+Schedule::command('horizon:snapshot')->everyFiveMinutes();
+Schedule::command('infrastructure:monitor')->everyFiveMinutes();
+Schedule::command('backup:database')->dailyAt('02:00');
