@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\FeedMonitoringController;
 use App\Http\Controllers\Api\Admin\NewsModerationController;
 use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Api\Admin\RecommendationAnalyticsController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\RssSourceController;
 use App\Http\Controllers\Api\Client\AnalyticsController as ClientAnalyticsController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Api\Client\CategoryController as ClientCategoryControll
 use App\Http\Controllers\Api\Client\DeviceController;
 use App\Http\Controllers\Api\Client\NewsController;
 use App\Http\Controllers\Api\Client\PreferenceController;
+use App\Http\Controllers\Api\Client\RecommendationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -107,7 +109,21 @@ Route::prefix('v1')->group(function () {
             Route::get('categories/{categoryId}', [AdminAnalyticsController::class, 'categoryAnalytics']);
             Route::get('search-trends', [AdminAnalyticsController::class, 'searchTrends']);
             Route::get('retention', [AdminAnalyticsController::class, 'retention']);
+            Route::get('recommendations', [RecommendationAnalyticsController::class, 'index']);
+            Route::post('recommendations/snapshot', [RecommendationAnalyticsController::class, 'calculateSnapshot']);
         });
+    });
+
+    // Personalized Recommendation APIs (authenticated)
+    Route::prefix('recommendations')->middleware(['auth:sanctum', 'track.activity'])->group(function () {
+        Route::get('feed', [RecommendationController::class, 'feed']);
+        Route::get('trending', [RecommendationController::class, 'trending']);
+        Route::get('local', [RecommendationController::class, 'local']);
+        Route::get('following', [RecommendationController::class, 'following']);
+        Route::get('breaking', [RecommendationController::class, 'breaking']);
+        Route::get('profile', [RecommendationController::class, 'profile']);
+        Route::post('feedback', [RecommendationController::class, 'feedback']);
+        Route::post('behavior', [RecommendationController::class, 'trackBehavior']);
     });
 
     // Public News APIs

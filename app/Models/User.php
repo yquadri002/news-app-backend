@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -33,4 +34,40 @@ class User extends Model
     {
         return $this->hasOne(UserPreference::class);
     }
+
+    public function interestProfile(): HasOne
+    {
+        return $this->hasOne(UserInterestProfile::class);
+    }
+
+    public function categoryScores(): HasMany
+    {
+        return $this->hasMany(UserCategoryScore::class);
+    }
+
+    public function sourceScores(): HasMany
+    {
+        return $this->hasMany(UserSourceScore::class);
+    }
+
+    public function topicScores(): HasMany
+    {
+        return $this->hasMany(UserTopicScore::class);
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(UserBookmark::class);
+    }
+
+    public function behaviorEvents(): HasMany
+    {
+        return $this->hasMany(UserBehaviorEvent::class);
+    }
+
+    public function segmentMemberships(): HasMany
+    {
+        return $this->hasMany(UserSegmentMembership::class);
+    }
 }
+
