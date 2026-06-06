@@ -35,4 +35,18 @@ return [
         'min_sample_size' => 500,
         'confidence_threshold' => 0.95,
     ],
+
+    'subscription' => [
+        'strict_receipt_validation' => env('SUBSCRIPTION_STRICT_RECEIPT_VALIDATION', true),
+        'apple_shared_secret' => env('APPLE_SHARED_SECRET'),
+        'google_service_account' => env('GOOGLE_PLAY_SERVICE_ACCOUNT'),
+        'ios_transaction_pattern' => '/^[A-Za-z0-9._-]{10,}$/',
+        'android_transaction_pattern' => '/^(GPA\.)?[A-Za-z0-9._-]{10,}$/',
+        'default_transaction_pattern' => '/^[A-Za-z0-9._-]{8,}$/',
+    ],
+
+    'events' => [
+        'max_per_minute' => (int) env('REVENUE_EVENTS_MAX_PER_MINUTE', 60),
+        'max_amount' => (float) env('REVENUE_EVENTS_MAX_AMOUNT', 1.0),
+    ],
 ];

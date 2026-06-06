@@ -11,6 +11,7 @@ class ApiRateLimiter
 {
     public function handle(Request $request, Closure $next, string $limiter = 'api'): Response
     {
+        $limiter = $limiter === 'api' ? $this->resolveLimiter($request) : $limiter;
         $key = $this->resolveKey($request, $limiter);
         $maxAttempts = $this->getMaxAttempts($limiter);
 
@@ -52,5 +53,25 @@ class ApiRateLimiter
             'public' => config('infrastructure.rate_limiting.public_per_minute', 300),
             default => config('infrastructure.rate_limiting.api_per_minute', 120),
         };
+    }
+
+    private function resolveLimiter(Request $request): string
+    {
+        if ($request->is(
+            'api/v1/admin/auth/login',
+            'api/v1/admin/auth/forgot-password',
+            'api/v1/admin/auth/reset-password',
+            'api/v1/client/device/register',
+            'api/v1/client/auth/refresh',
+            'api/v1/admin/auth/refresh',
+        )) {
+            return 'auth';
+        }
+
+        if ($request->is('api/v1/news/*', 'api/v1/client/categories', 'api/v1/client/app/*')) {
+            return 'public';
+        }
+
+        return 'api';
     }
 }

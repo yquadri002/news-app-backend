@@ -19,8 +19,8 @@ use App\Http\Controllers\Api\Client\AnalyticsController as ClientAnalyticsContro
 use App\Http\Controllers\Api\Client\AppUpdateController;
 use App\Http\Controllers\Api\Client\CategoryController as ClientCategoryController;
 use App\Http\Controllers\Api\Client\DeviceController;
-use App\Http\Controllers\Api\Client\NotificationController as ClientNotificationController;
 use App\Http\Controllers\Api\Client\NewsController;
+use App\Http\Controllers\Api\Client\NotificationController as ClientNotificationController;
 use App\Http\Controllers\Api\Client\PreferenceController;
 use App\Http\Controllers\Api\Client\RecommendationController;
 use App\Http\Controllers\Api\Client\RevenueController as ClientRevenueController;
@@ -36,7 +36,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Admin Protected Routes
-    Route::prefix('admin')->middleware(['auth:sanctum', 'admin.active'])->group(function () {
+    Route::prefix('admin')->middleware(['auth:sanctum', 'admin.active', 'access.token'])->group(function () {
 
         Route::post('auth/logout', [AdminAuthController::class, 'logout']);
         Route::get('auth/me', [AdminAuthController::class, 'me']);
@@ -118,8 +118,11 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    Route::post('admin/auth/refresh', [AdminAuthController::class, 'refresh'])
+        ->middleware(['auth:sanctum', 'admin.active', 'refresh.token']);
+
     // Revenue & Growth Platform APIs (admin)
-    Route::prefix('revenue')->middleware(['auth:sanctum', 'admin.active', 'admin.permission:revenue.manage'])->group(function () {
+    Route::prefix('revenue')->middleware(['auth:sanctum', 'admin.active', 'access.token', 'admin.permission:revenue.manage'])->group(function () {
         Route::get('dashboard', [AdminRevenueController::class, 'dashboard']);
         Route::get('analytics', [AdminRevenueController::class, 'analytics']);
         Route::get('subscriptions', [AdminRevenueController::class, 'subscriptions']);
@@ -128,7 +131,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Notification Intelligence APIs (admin)
-    Route::prefix('notifications')->middleware(['auth:sanctum', 'admin.active', 'admin.permission:notifications.manage'])->group(function () {
+    Route::prefix('notifications')->middleware(['auth:sanctum', 'admin.active', 'access.token', 'admin.permission:notifications.manage'])->group(function () {
         Route::get('recommendations', [NotificationIntelligenceController::class, 'recommendations']);
         Route::post('send', [NotificationIntelligenceController::class, 'send']);
         Route::post('test', [NotificationIntelligenceController::class, 'test']);
@@ -137,7 +140,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Personalized Recommendation APIs (authenticated)
-    Route::prefix('recommendations')->middleware(['auth:sanctum', 'track.activity'])->group(function () {
+    Route::prefix('recommendations')->middleware(['auth:sanctum', 'access.token', 'track.activity'])->group(function () {
         Route::get('feed', [RecommendationController::class, 'feed']);
         Route::get('trending', [RecommendationController::class, 'trending']);
         Route::get('local', [RecommendationController::class, 'local']);
@@ -164,11 +167,14 @@ Route::prefix('v1')->group(function () {
 
         Route::post('device/register', [DeviceController::class, 'register']);
 
+        Route::post('auth/refresh', [DeviceController::class, 'refresh'])
+            ->middleware(['auth:sanctum', 'refresh.token']);
+
         Route::get('categories', [ClientCategoryController::class, 'index']);
         Route::get('app/check-update', [AppUpdateController::class, 'checkUpdate']);
         Route::get('remote-config', [AppUpdateController::class, 'remoteConfig']);
 
-        Route::middleware(['auth:sanctum', 'track.activity'])->group(function () {
+        Route::middleware(['auth:sanctum', 'access.token', 'track.activity'])->group(function () {
             Route::get('preferences', [PreferenceController::class, 'show']);
             Route::put('preferences', [PreferenceController::class, 'update']);
             Route::patch('preferences/interests', [PreferenceController::class, 'updateInterests']);

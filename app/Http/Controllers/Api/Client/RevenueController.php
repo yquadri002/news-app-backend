@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\TrackRevenueEventRequest;
 use App\Http\Resources\SubscriptionPlanResource;
 use App\Services\Revenue\RevenueEventTrackingService;
+use App\Services\Revenue\RevenueEventVerifier;
+use App\Services\Revenue\SubscriptionReceiptValidator;
 use App\Services\Revenue\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,8 @@ class RevenueController extends Controller
 {
     public function __construct(
         private readonly RevenueEventTrackingService $trackingService,
+        private readonly RevenueEventVerifier $eventVerifier,
+        private readonly SubscriptionReceiptValidator $receiptValidator,
         private readonly SubscriptionService $subscriptionService,
     ) {
     }
@@ -22,6 +26,7 @@ class RevenueController extends Controller
     {
         $data = $request->validated();
         $user = $request->user();
+        $this->eventVerifier->assertAllowed($user, $data);
         $data['user_id'] = $user->id;
         $data['platform'] = $user->platform;
         $data['country'] = $user->location;
@@ -45,11 +50,18 @@ class RevenueController extends Controller
     {
         $request->validate([
             'plan_id' => ['required', 'integer', 'exists:subscription_plans,id'],
-            'store_transaction_id' => ['nullable', 'string'],
+            'store_transaction_id' => ['required', 'string', 'max:255'],
         ]);
 
+        $user = $request->user();
+        $this->receiptValidator->validate(
+            $user->platform ?? 'unknown',
+            $request->string('store_transaction_id')->toString(),
+            $request->integer('plan_id'),
+        );
+
         $subscription = $this->subscriptionService->subscribe(
-            $request->user(),
+            $user,
             $request->integer('plan_id'),
             $request->only(['store_transaction_id', 'metadata']),
         );

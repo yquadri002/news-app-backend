@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'monitoring' => [
+        'horizon_enabled' => env('HORIZON_ENABLED', false),
+        'pulse_enabled' => env('PULSE_ENABLED', false),
+        'telescope_enabled' => env('TELESCOPE_ENABLED', false),
+        'allowed_emails' => env('MONITORING_ALLOWED_EMAILS', 'admin@newshub.pro'),
+    ],
+
+    'device_registration' => [
+        'per_minute' => (int) env('DEVICE_REGISTER_PER_MINUTE', 5),
+        'per_day' => (int) env('DEVICE_REGISTER_PER_DAY', 20),
+    ],
+
     'health' => [
         'check_database' => env('HEALTH_CHECK_DATABASE', true),
         'check_redis' => env('HEALTH_CHECK_REDIS', true),
