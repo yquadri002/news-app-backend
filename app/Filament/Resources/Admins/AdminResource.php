@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Filament\Resources\Admins;
+
+use App\Enums\AdminPermission;
+use App\Filament\Concerns\AuthorizesAdminPermission;
+use App\Filament\Resources\Admins\Pages\CreateAdmin;
+use App\Filament\Resources\Admins\Pages\EditAdmin;
+use App\Filament\Resources\Admins\Pages\ListAdmins;
+use App\Filament\Resources\Admins\Schemas\AdminForm;
+use App\Filament\Resources\Admins\Tables\AdminsTable;
+use App\Models\Admin;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use UnitEnum;
+
+class AdminResource extends Resource
+{
+    use AuthorizesAdminPermission;
+
+    protected static ?string $model = Admin::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+
+    protected static string|UnitEnum|null $navigationGroup = 'System';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static function requiredPermission(): ?AdminPermission
+    {
+        return AdminPermission::AdminsManage;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return AdminForm::configure($schema);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return AdminsTable::configure($table);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListAdmins::route('/'),
+            'create' => CreateAdmin::route('/create'),
+            'edit' => EditAdmin::route('/{record}/edit'),
+        ];
+    }
+}
