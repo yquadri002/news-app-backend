@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Admin extends Authenticatable implements CanResetPasswordContract
+class Admin extends Authenticatable implements CanResetPasswordContract, FilamentUser
 {
     use CanResetPassword, HasApiTokens, HasFactory, Notifiable;
 
@@ -51,5 +53,10 @@ class Admin extends Authenticatable implements CanResetPasswordContract
     public function hasPermission(string $permission): bool
     {
         return $this->role?->hasPermission($permission) ?? false;
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_active && $panel->getId() === 'admin';
     }
 }
